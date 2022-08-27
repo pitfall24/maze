@@ -12,13 +12,13 @@ class Maze:
     def __getitem__(self, key):
         if type(key) == int:
             return self.maze[key]
-        if type(key) == tuple:
+        elif type(key) == tuple:
             if type(key[0]) == int:
                 return self.maze[key[0]][key[1]]
             if type(key[0]) == slice:
                 return [i[key[1]] for i in self.maze[key[0]]]
-            
-        raise TypeError(f"{type(key)} indexing not supported")
+        else:
+            raise TypeError(f"'{type(key).__name__}' indexing not supported")
         
     def __setitem__(self, key, value):
         if type(key) == tuple:
@@ -36,9 +36,8 @@ class Maze:
                     for i in range(self.height)[key[0]]:
                         for j in range(self.width)[key[1]]:
                             self.maze[i][j] = value
-            return
-        
-        raise TypeError(f"{'singular ' if len(key) == 1 else ''}{type(key)} indexing not supported")
+        else:
+            raise TypeError(f"{'singular ' if type(key) == int else ''}'{type(key).__name__}' indexing not supported")
     
     def __str__(self):
         return '\n'.join(' '.join(str(j) for j in i) for i in self.maze)
