@@ -1,46 +1,65 @@
+from exceptions import DimensionError, LocationError
+from util import out_of_bounds
+import numpy as np
+
 class Maze:
-    def __init__(self, height=24, width=24):
-        self.height = height + 2
-        self.width = width + 2
+    def __init__(self, *args, start=None, end=None):
+        if args:
+            self.shape = tuple(args)
+        else:
+            raise DimensionError('create maze', None)
         
-        # -1 = Starting value
-        #  0 = Movable space
-        #  1 = Regular wall
-        #  2 = Padding which represents static wall
-        self.maze = [[-1 if 0 < j < self.width - 1 and 0 < i < self.height - 1 else 2 for j in range(self.width)] for i in range(self.height)]
+        # -1 = Immovable wall used as padding
+        #  0 = Regular wall
+        #  1 = Movable space
+        self.maze = np.pad(np.zeros([i - 2 for i in self.shape]), 1, constant_values=-1)
+
+        self._setstart(start)
+        self._setend(end)
+
+    def generate(self, difficulty, sparsity):
+        self._generate_solution(difficulty)
+        self._generate_random(sparsity)
+
+    def _generate_solution(self, difficulty):
+        pass
+
+    def _generate_random(self, sparsity):
+        pass
+
+    def _setstart(self, start):
+        if start:
+            if type(start) == int:
+                start = (start, )
+            if out_of_bounds(start, self.shape):
+                raise LocationError('create start location', start, self.shape)
+            else:
+                self.start = start
+        else:
+            self.start = ([1 for _ in self.shape])
+
+    def _setend(self, end):
+        if end:
+            if type(end) == int:
+                end = (end, )
+            if out_of_bounds(end, self.shape):
+                raise LocationError('create end location', end, self.shape)
+            else:
+                self.end = end
+        else:
+            self.end = ([i - 2 for i in self.shape])
     
     def __getitem__(self, key):
-        if type(key) == int:
-            return self.maze[key]
-        elif type(key) == tuple:
-            if type(key[0]) == int:
-                return self.maze[key[0]][key[1]]
-            if type(key[0]) == slice:
-                return [i[key[1]] for i in self.maze[key[0]]]
-        else:
-            raise TypeError(f"'{type(key).__name__}' indexing not supported")
-        
+        return self.maze[key]
+
     def __setitem__(self, key, value):
-        if type(key) == tuple:
-            if type(key[0]) == int:
-                if type(key[1]) == int:
-                    self.maze[key[0]][key[1]] = value
-                if type(key[1]) == slice:
-                    for i in range(self.width)[key[1]]:
-                        self.maze[key[0]][i] = value
-            if type(key[0]) == slice:
-                if type(key[1]) == int:
-                    for i in range(self.height)[key[0]]:
-                        self.maze[i][key[1]] = value
-                if type(key[1]) == slice:
-                    for i in range(self.height)[key[0]]:
-                        for j in range(self.width)[key[1]]:
-                            self.maze[i][j] = value
-        else:
-            raise TypeError(f"{'singular ' if type(key) == int else ''}'{type(key).__name__}' indexing not supported")
+        self.maze[key] = value
+    
+    def __len__(self):
+        return self.shape
     
     def __str__(self):
-        return '\n'.join(' '.join(str(j) for j in i) for i in self.maze)
-        
-    def __len__(self):
-        return len(self.maze[0]), len(self.maze)
+        if len(self.shape) == 2:
+            return '\n'.join(' '.join(str(j) for j in i) for i in self.maze)
+        else:
+            raise DimensionError('print maze', self.shape)
