@@ -1,5 +1,6 @@
-from exceptions import DimensionError, LocationError
-from util import out_of_bounds
+from exceptions import DimensionError, LocationError, ScopeError
+from util import out_of_bounds, compare
+from path import Path
 import numpy as np
 
 class Maze:
@@ -17,15 +18,36 @@ class Maze:
         self._setstart(start)
         self._setend(end)
 
-    def generate(self, difficulty, sparsity):
-        self._generate_solution(difficulty)
-        self._generate_random(sparsity)
+        self.solution = Path(self.shape, self.start)
+        self.whole = Path(self.shape, self.start)
 
-    def _generate_solution(self, difficulty):
+    def generate(self, scope, aversion):
+        self._generate_solution(scope, aversion)
+        self._generate_random()
+
+    def _generate_solution(self, scope, aversion):
+        if len(scope) != len(self.shape):
+            raise DimensionError('define generator scope', scope)
+        else:
+            if compare(scope, 1) == 0:
+                raise ScopeError('set generator scope', scope, (0, 1), (1, max([i for i in self.shape])))
+            if compare(scope, 1) == -1:
+                scope = tuple(int(self.shape[i] * scope[i]) for i in range(len(self.shape)))
+        
+        # 
+
+    def _generate_random(self):
         pass
 
-    def _generate_random(self, sparsity):
-        pass
+    def _add_square(self, location, value):
+        if out_of_bounds(location, self.shape):
+            return False
+        if self.maze[location] == -1 and value != -1:
+            return False
+        else:
+            self.maze[location] = value
+        
+        return True
 
     def _setstart(self, start):
         if start:
