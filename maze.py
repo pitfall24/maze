@@ -1,7 +1,8 @@
 from exceptions import DimensionError, LocationError, ScopeError
-from util import out_of_bounds, compare
+from util import out_of_bounds, compare, compare_list
 from path import Path
 import numpy as np
+from random import random
 
 class Maze:
     def __init__(self, *args, start=None, end=None):
@@ -18,22 +19,32 @@ class Maze:
         self._setstart(start)
         self._setend(end)
 
+    def generate(self, scope, aversion):
         self.solution = Path(self.shape, self.start)
         self.whole = Path(self.shape, self.start)
 
-    def generate(self, scope, aversion):
         self._generate_solution(scope, aversion)
         self._generate_random()
 
     def _generate_solution(self, scope, aversion):
-        if len(scope) != len(self.shape):
-            raise DimensionError('define generator scope', scope)
+        if type(scope) == int:
+            if 1 <= scope <= min(self.shape):
+                scope = tuple(scope for _ in range(len(self.shape)))
+            else:
+                raise DimensionError('establish scope', tuple(scope for _ in range(len(self.shape))))
+        if type(scope) == tuple or type(scope) == list:
+            if len(scope) != len(self.shape):
+                raise DimensionsError('define generator scope', scope)
+            for i, val in enumerate(scope):
+                if 0 < val < 1:
+                    scope[i] = self.shape[i] * val
+                if not 1 < val < self.shape[i]:
+                    raise ValueError(f'Cannot assign scope dimension {val} within (1, {self.shape})')
         else:
-            if compare(scope, 1) == 0:
-                raise ScopeError('set generator scope', scope, (0, 1), (1, max([i for i in self.shape])))
-            if compare(scope, 1) == -1:
-                scope = tuple(int(self.shape[i] * scope[i]) for i in range(len(self.shape)))
+            raise TypeError(f'Cannot parse scope with type {type(scope)}. Must be int')
         
+        vec = [random() * 2 - 1 for i in range(len(self.shape))]
+
         # 
 
     def _generate_random(self):

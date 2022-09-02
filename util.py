@@ -38,16 +38,26 @@ def threshold(nums, limit, lower=True):
     
     return True
 
-def compare(nums, limit):
+def compare(num, limit):
     '''
-    :param nums: list or tuple of numbers to compare with
+    :param num: number to compare with
     :param limit: limit to compare against
     :return: 0 if neither, 1 if higher, -1 if lower than limit
     '''
-    if not threshold(nums, limit):
-        return 0
-    
-    if nums[0] > limit:
+    if num > limit:
         return 1
-    
-    return -1
+    if num < limit:
+        return -1
+    else:
+        return 0
+
+def compare_list(nums, limits):
+    '''
+    :param nums: list of numbers to compare with
+    :param limits: int or list of limits to compare against
+    :return: list of 1, -1, or 0 if greater, less than, or neither respectively
+    '''
+    if type(limits) == int:
+        limits = [limits for _ in range(len(nums))]
+
+    return [compare(i, j) for i, j in zip(nums, limits)]
